@@ -16,7 +16,7 @@ Down-Cloud ist ein innovatives Chrome-Erweiterungstool, das dir hilft, deine Dat
 
 1. Stelle sicher, dass du die neueste Version von Google Chrome installiert hast.
 2. Gehe zum [Releases](https://github.com/johangrims/down-cloud/releases) Bereich und lade die neueste `.crx`-Datei herunter.
-   > ⚠️ **Wichtig**: Verwende Rechtsklick -> "Link speichern unter...", sonst wird Chrome einen Fehler anzeigen!
+   > ⚠️ **Wichtig**: Verwende Rechtsklick → "Link speichern unter...", sonst wird Chrome einen Fehler anzeigen!
 3. Öffne `chrome://extensions` in deinem Browser.
 4. Aktiviere den "Entwicklermodus" oben rechts.
 5. Ziehe die heruntergeladene `.crx`-Datei per Drag & Drop in das Browserfenster.
@@ -60,7 +60,7 @@ Nach der Installation erscheint auf den Seiten der HPI Schulcloud eine stylische
 
 Der Dateibaum bietet dir eine übersichtliche Darstellung deiner gesamten Ordnerstruktur:
 
-Klicke auf einzelne Dateien, um sie zur herunterzuladen. Durch Klicken auf einen Ordner lädst du automatisch diesen alle darin enthaltenen Dateien und Dateien etwaiger Unterordner herunter. So kannst du mit einem Klick ganze Ordnerstrukturen herunterladen!
+Klicke auf einzelne Dateien, um sie herunterzuladen. Durch Klicken auf einen Ordner lädst du automatisch diesen alle darin enthaltenen Dateien und Dateien etwaiger Unterordner herunter. So kannst du mit einem Klick ganze Ordnerstrukturen herunterladen!
 
 
 ## ⚙️ Konfiguration & Performance
