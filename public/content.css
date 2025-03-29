@@ -10,3 +10,7 @@ li {
 .file_structure::before {
   content: "📄 ";
 }
+
+.new-directory {
+  margin-bottom: 10px;
+}
