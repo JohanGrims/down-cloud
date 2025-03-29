@@ -1,113 +1,99 @@
 # 🚀 Down-Cloud: HPI Schulcloud Migrationstool
 
-Down-Cloud ist ein innovatives Chrome-Erweiterungstool, das dir hilft, deine Dateien aus der HPI Schulcloud zu retten und den Übergang zur neuen Nextcloud-Umgebung zu meistern! Da die HPI Schulcloud keine direkte Download-Funktionalität mehr bietet, springt Down-Cloud ein und ermöglicht dir einen nahtlosen Migrationsprozess.
+Down-Cloud ist ein leistungsstarkes Chrome-Erweiterungs-Tool, das dir hilft, deine Dateien aus der HPI Schulcloud zu sichern und nahtlos zur neuen Nextcloud-Umgebung zu migrieren. Da die HPI Schulcloud keine direkte Download-Funktionalität mehr bietet, schließt Down-Cloud diese Lücke und ermöglicht dir einen effizienten Migrationsprozess.
 
-## ✨ Funktionen
+## ✨ Hauptfunktionen
 
-- 📁 Intelligentes Crawling der Schulcloud-Ordnerstruktur
-- 🔍 Automatische Erkennung aller verfügbaren Dateien und Unterordner
-- 📦 Paralleles Herunterladen durch cleveres Tab-Management
-- ⚡ Batch-Downloads mit konfigurierbarer Geschwindigkeit
-- 🧩 Interaktiver Dateibaum zur gezielten Auswahl
-- 📊 Live-Status-Updates während des Crawling-Prozesses
-- 🗂️ Export leerer Ordnerstrukturen als ZIP zur Wiederverwendung
+- 📁 Automatisches Crawling der Schulcloud-Ordnerstruktur
+- 🔍 Erkennung aller verfügbaren Dateien und Unterordner
+- 📦 Paralleles Herunterladen durch intelligentes Tab-Management
+- ⚡ Konfigurierbare Batch-Downloads für optimale Performance
+- 🧩 Interaktiver Dateibaum zur präzisen Auswahl
+- 📊 Echtzeit-Status während des Crawling-Prozesses
+- 🗂️ Export leerer Ordnerstrukturen als ZIP
 
 ## 🔧 Installation
 
-1. Stelle sicher, dass du die neueste Version von Google Chrome installiert hast.
-2. Gehe zum [Releases](https://github.com/johangrims/down-cloud/releases) Bereich und lade die neueste `.crx`-Datei herunter.
-   > ⚠️ **Wichtig**: Verwende Rechtsklick → "Link speichern unter...", sonst wird Chrome einen Fehler anzeigen (CRX_REQUIRED_PROOF_MISSING)!
-3. Öffne `chrome://extensions` in deinem Browser.
-4. Aktiviere den "Entwicklermodus" oben rechts.
-5. Ziehe die heruntergeladene `.crx`-Datei per Drag & Drop in das Browserfenster.
-6. Fertig! 🎉 Die Extension ist nun einsatzbereit.
+1. Installiere die neueste Version von Google Chrome
+2. Lade die aktuelle `.crx`-Datei aus dem [Releases](https://github.com/johangrims/down-cloud/releases)-Bereich herunter
+   > ⚠️ **Wichtig**: Verwende Rechtsklick → "Link speichern unter...", sonst zeigt Chrome einen Fehler an (CRX_REQUIRED_PROOF_MISSING)
+3. Öffne `chrome://extensions` in Chrome
+4. Aktiviere den "Entwicklermodus" (oben rechts)
+5. Ziehe die heruntergeladene `.crx`-Datei per Drag & Drop in das Browserfenster
+6. Fertig! 🎉 Die Erweiterung ist einsatzbereit
 
-## 🚀 Funktionsweise im Detail
+## 🚀 So funktioniert es
 
-Down-Cloud arbeitet mit einer ausgeklügelten Multi-Tab-Strategie:
+Down-Cloud nutzt eine innovative Multi-Tab-Strategie:
 
-1. **Intelligentes Crawling**: Die Erweiterung öffnet automatisch Tabs im Hintergrund, um die gesamte Ordnerstruktur zu erfassen, ohne dass du manuell navigieren musst.
+1. **Intelligentes Crawling**: Die Erweiterung öffnet Hintergrund-Tabs, um die gesamte Ordnerstruktur automatisch zu erfassen
+2. **Effizientes Tab-Management**: Temporäre Tabs werden für jede Datei/jeden Ordner im Hintergrund geöffnet und wieder geschlossen
+3. **Echtzeitanalyse**: Eine vollständige Baumstruktur deiner Dateien wird während des Scans erstellt und angezeigt
+4. **Optimierte Batch-Verarbeitung**: Downloads werden in konfigurierbaren Gruppen ausgeführt, um den Server zu schonen
+5. **Parallele Verarbeitung**: Mehrere Downloads laufen gleichzeitig, was die Migrationszeit erheblich verkürzt
 
-2. **Dynamisches Tab-Management**: Für jede Datei und jeden Ordner werden temporäre Tabs geöffnet, Informationen extrahiert und dann wieder geschlossen - alles für dich unsichtbar im Hintergrund!
+## ⚠️ Wichtig: Vorsicht bei komplexen Ordnerstrukturen
 
-3. **Fortschrittliche Datenerfassung**: Während des Scan-Prozesses wird eine vollständige Baumstruktur deiner Dateien erstellt, die in Echtzeit im Dialog angezeigt wird.
+Bei umfangreichen Dateisammlungen können folgende Probleme auftreten:
 
-4. **Batch-Processing**: Um den Schulcloud-Server nicht zu überlasten, werden Downloads in konfigurierbaren Chargen ausgeführt, mit einstellbaren Pausen zwischen den Batches.
-
-5. **Parallele Downloads**: Die Erweiterung nutzt Chromes Fenster- & Tab-System, um mehrere Downloads gleichzeitig zu starten und so die Migrationszeit erheblich zu verkürzen.
-
-## ⚠️ Wichtige Warnung vor Tab-Überlastung
-
-Bei umfangreichen Ordnerstrukturen kann es in seltenen Fällen zu unerwarteten Schleifen kommen, die Chrome zum Einfrieren bringen können:
-
-- Down-Cloud könnte versuchen, bis zu 200 Tabs gleichzeitig zu öffnen!
-- Dies kann bei komplexen Ordnerstrukturen zu erheblichen Leistungsproblemen oder sogar zum vollständigen Einfrieren von Chrome führen.
-- Sollte Chrome nicht mehr reagieren, hilft nur noch das komplette Beenden des Browsers (Task-Manager oder Force Quit).
-- **Wichtig**: Nach einem solchen Absturz NICHT auf "Sitzung wiederherstellen" oder "Tabs wiederherstellen" klicken, da sonst die problematischen Tabs erneut geöffnet werden!
-- Starte Chrome besser mit einer neuen, leeren Sitzung und passe dann die Down-Cloud-Einstellungen entsprechend an.
+- In seltenen Fällen versucht Down-Cloud bis zu 200 Tabs gleichzeitig zu öffnen
+- Dies kann zu Leistungsproblemen oder zum Einfrieren von Chrome führen
+- Bei Chrome-Absturz: Browser vollständig beenden (über Task-Manager/Force Quit)
+- **Nach einem Absturz**: NICHT "Sitzung wiederherstellen" wählen, sondern mit neuer Sitzung starten
+- Bei komplexen Strukturen die Batch-Einstellungen anpassen (kleinere Gruppen, längere Pausen)
 
 ## 🎮 Anwendung
 
-Nach der Installation erscheint auf den Seiten der HPI Schulcloud eine stylische "Down-Cloud" Schaltfläche:
+1. Navigiere zum Dateibereich in der HPI Schulcloud
+2. Klicke auf die "Down-Cloud"-Schaltfläche
+3. Verfolge in Echtzeit die Erkennung deiner Ordnerstruktur
+4. Wähle gezielt aus, was du herunterladen möchtest
+5. Starte den Download-Prozess und beobachte den Fortschritt
 
-1. Navigiere zu deinem Dateibereich in der HPI Schulcloud.
-2. Klicke auf die "Down-Cloud" Schaltfläche - ein interaktiver Dialog erscheint.
-3. Beobachte in Echtzeit, wie deine Ordnerstruktur erkannt wird!
-4. Wähle gezielt aus, welche Ordner oder Dateien du herunterladen möchtest.
-5. Lehne dich zurück und beobachte, wie Down-Cloud die Arbeit für dich erledigt!
+### 🌳 Effiziente Dateiauswahl
 
-### 🌳 Interaktive Dateiauswahl im Dateibaum
+Der interaktive Dateibaum bietet:
 
-Der Dateibaum bietet dir eine übersichtliche Darstellung deiner gesamten Ordnerstruktur:
+- Einzelauswahl von Dateien durch direktes Anklicken
+- Massenauswahl durch Ordner-Klick (inkl. aller Unterordner und Dateien)
+- Übersichtliche Hierarchie-Darstellung für schnelle Navigation
 
-Klicke auf einzelne Dateien, um sie herunterzuladen. Durch Klicken auf einen Ordner lädst du automatisch diesen alle darin enthaltenen Dateien und Dateien etwaiger Unterordner herunter. So kannst du mit einem Klick ganze Ordnerstrukturen herunterladen!
+## ⚙️ Performance-Optimierung
 
+Passe folgende Parameter für optimale Ergebnisse an:
 
-## ⚙️ Konfiguration & Performance
+| Parameter | Funktion | Standard | Empfehlung |
+|-----------|----------|----------|------------|
+| **batchSize** | Anzahl gleichzeitiger Downloads | 5 | 3-5 (normal), 1-2 (langsame Verbindung) |
+| **batchDelay** | Wartezeit zwischen Download-Gruppen (Sek.) | 5 | 5-10 (große Datenmengen) |
+| **scanTime** | Maximale Zeit für Ordnerstruktur-Scan (Sek.) | 20 | 30-60 (tiefe Ordnerstrukturen) |
 
-Die Erweiterung bietet dir folgende anpassbare Parameter:
+## 💡 Experten-Tipps
 
-### batchSize (Chargengröße)
-Diese Einstellung legt fest, wie viele Downloads gleichzeitig gestartet werden. Ein höherer Wert beschleunigt den gesamten Prozess, kann aber bei langsamen Verbindungen zu Problemen führen.
-- **Standard**: 5 Dateien
-- **Empfehlung**: 3-5 für normale Internetverbindungen, 1-2 bei langsameren Verbindungen
+- Nutze zuerst die "Ordnerstruktur als ZIP"-Funktion, um einen Überblick zu erhalten
+- Bei tiefen Ordnerstrukturen: Erhöhe die Scan-Zeit in den Einstellungen
+- Achte auf ausreichend Speicherplatz im Downloads-Ordner
+- Starte mit kleineren Ordnern, um optimale Einstellungen zu finden
+- Vermeide Tab-Überlastung durch selektive Auswahl statt Komplett-Migration
+- Bei Leistungsproblemen: Prozess stoppen und Batch-Parameter anpassen
 
-### batchDelay (Chargenverzögerung)
-Dieser Wert bestimmt, wie viele Sekunden Down-Cloud wartet, bevor der nächste Stapel von Downloads gestartet wird. Eine längere Verzögerung schont den Schulcloud-Server und verhindert mögliche Verbindungsabbrüche.
-- **Standard**: 5 Sekunden
-- **Empfehlung**: 5-10 Sekunden bei größeren Datenmengen
+## 🛠️ Technische Details
 
-### scanTime (Scan-Dauer)
-Diese Einstellung legt fest, wie viele Sekunden Down-Cloud maximal aufwendet, um deine Ordnerstruktur zu durchsuchen und alle Unterordner zu identifizieren. Bei komplexen oder sehr umfangreichen Strukturen solltest du diesen Wert erhöhen.
-- **Standard**: 20 Sekunden
-- **Empfehlung**: 30-60 Sekunden bei tiefen Ordnerstrukturen
+Down-Cloud kombiniert mehrere fortschrittliche Techniken:
 
-⚡ **Performance-Tipp**: Bei sehr großen Ordnerstrukturen oder langsameren Verbindungen kannst du die Batch-Größe verringern und die Verzögerung erhöhen, um eine zuverlässigere Übertragung zu gewährleisten.
+- DOM-Analyse zur Identifikation aller Datei- und Ordnerelemente
+- Rekursive Crawler-Funktion für vollständige Baumstruktur-Erstellung
+- Intelligentes Batch-Management für optimierte Server-Auslastung
+- Chrome-API-Integration für Tab- und Speicherverwaltung
 
-## 💡 Profi-Tipps
+## 🔒 Datenschutz
 
-- Nutze die "Ordnerstruktur als ZIP" Funktion, um zunächst einen Überblick über deine Dateien zu bekommen und die Ordnerstruktur eventuell wieder herzustellen.
-- Bei komplexen Strukturen: Erhöhe die Scan-Zeit über die Einstellungen, damit auch tief verschachtelte Ordner vollständig erfasst werden.
-- Achte auf deinen Downloads-Ordner! Er könnte schnell voll werden, wenn du große Datenmengen migrierst.
-- Für umfangreiche Migrationen: Starte mit kleinen Ordnern, um die optimalen Einstellungen für deine Verbindung zu finden.
-- Um Tab-Überlastung zu vermeiden: Versuche, nur die wirklich benötigten Ordner auszuwählen, anstatt alles auf einmal zu migrieren.
-- Bei ersten Anzeichen von Leistungsproblemen (Chrome reagiert träge): Stoppe den aktuellen Prozess und verringere die Batch-Größe oder erhöhe die Verzögerung.
-
-## 🛠️ Technischer Hintergrund
-
-Down-Cloud nutzt eine Kombination aus DOM-Manipulation, Chrome's Background-Tab-API und asynchronen Prozessen:
-
-- Die DOM-Analyse identifiziert alle Datei- und Ordnerelemente auf der Schulcloud-Seite
-- Die recursive Crawler-Funktion baut eine vollständige Baumstruktur auf
-- Ein intelligenter Download-Manager steuert die Batch-Verarbeitung
-- Chrome's Speicher-API wird genutzt, um den Zustand zwischen Tabs zu synchronisieren
-
-## 🔒 Datenschutz & Sicherheit
-
-Down-Cloud läuft vollständig in deinem Browser und sendet keine Daten an externe Server. Alle Operationen werden lokal ausgeführt, und nach Abschluss der Migration werden sämtliche temporären Daten aus dem Chrome-Speicher gelöscht.
+- Alle Operationen laufen ausschließlich lokal in deinem Browser
+- Keine Datenübertragung an externe Server
+- Temporäre Daten werden nach Abschluss der Migration gelöscht
 
 ---
 
-⭐ Entwickelt aus der Not heraus. Dieses Tool hilft dir, deine wertvollen Daten sicher in die neue Nextcloud-Umgebung zu übertragen.
+⭐ Entwickelt als pragmatische Lösung für die Schulcloud-Migration. Dieses Tool hilft dir, deine wertvollen Daten sicher in die neue Nextcloud-Umgebung zu übertragen.
 
-📣 Fragen? Probleme? Verbesserungsvorschläge? Öffne ein Issue auf GitHub und hilf mit, Down-Cloud noch besser zu machen!
+📣 Feedback, Probleme oder Verbesserungsvorschläge? Erstelle ein Issue auf GitHub und hilf mit, Down-Cloud weiterzuentwickeln!
