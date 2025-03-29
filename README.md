@@ -16,7 +16,7 @@ Down-Cloud ist ein innovatives Chrome-Erweiterungstool, das dir hilft, deine Dat
 
 1. Stelle sicher, dass du die neueste Version von Google Chrome installiert hast.
 2. Gehe zum [Releases](https://github.com/johangrims/down-cloud/releases) Bereich und lade die neueste `.crx`-Datei herunter.
-   > ⚠️ **Wichtig**: Verwende Rechtsklick → "Link speichern unter...", sonst wird Chrome einen Fehler anzeigen!
+   > ⚠️ **Wichtig**: Verwende Rechtsklick → "Link speichern unter...", sonst wird Chrome einen Fehler anzeigen (CRX_REQUIRED_PROOF_MISSING)!
 3. Öffne `chrome://extensions` in deinem Browser.
 4. Aktiviere den "Entwicklermodus" oben rechts.
 5. Ziehe die heruntergeladene `.crx`-Datei per Drag & Drop in das Browserfenster.
