@@ -1,0 +1,5 @@
+/dist
+/dist.crx
+/dist.pem
+/node_modules
+/pnpm-lock.yaml

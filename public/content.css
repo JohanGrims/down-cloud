@@ -1,0 +1,12 @@
+ul {
+  list-style-type: none;
+}
+li {
+  margin: 5px 0;
+}
+.folder_structure::before {
+  content: "📂 ";
+}
+.file_structure::before {
+  content: "📄 ";
+}
