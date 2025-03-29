@@ -1,82 +1,101 @@
 import JSZip from "jszip";
-
-/**
- * Get the stored settings from storage
- */
-function getSettings(): Promise<{
-  batchSize: number;
-  batchDelay: number;
-  scanTime: number;
-}> {
-  return new Promise((resolve) => {
     interface StorageResult {
-      batchSize?: number;
-      batchDelay?: number;
-      scanTime?: number;
+      batchSize: number;
+      batchDelay: number;
+      scanTime: number;
     }
 
-    chrome.storage.sync.get(
-      ["batchSize", "batchDelay", "scanTime"],
-      (result: StorageResult) => {
-        const batchSize: number = result.batchSize || 5; // Default to 5 if not set
-        const batchDelay: number = result.batchDelay || 5; // Default to 5 seconds if not set
-        const scanTime: number = result.scanTime || 20; // Default to 20 seconds if not set
-        resolve({ batchSize, batchDelay, scanTime });
-      }
-    );
-  });
-}
+    /**
+     * Get the stored settings from storage
+     */
+    function getSettings(): Promise<StorageResult> {
+      return new Promise((resolve) => {
+        chrome.storage.sync.get(
+          ["batchSize", "batchDelay", "scanTime"],
+          (result: StorageResult) => {
+            const batchSize: number = result.batchSize || 5; // Default to 5 if not set
+            const batchDelay: number = result.batchDelay || 5; // Default to 5 seconds if not set
+            const scanTime: number = result.scanTime || 20; // Default to 20 seconds if not set
+            resolve({ batchSize, batchDelay, scanTime });
+          }
+        );
+      });
+    }
 
-/**
- * Injects a download button into the UI
- */
-(() => {
-  function injectDownloadButton(): void {
-    // Inject after h3 with data-testid="folder-title" or data-testid="file-title"
-    const targetDiv = document.querySelector("h1#page-title");
-    if (!targetDiv) {
-      console.error("Target container not found");
-      return;
-    } // Exit if the container is not found
-    const button = document.createElement("button");
-    button.id = "downloadAllButton";
-    button.setAttribute("data-testid", "download-all-btn");
-    button.className = "btn btn-secondary d-flex align-items-center";
-    button.style.marginRight = "10px";
-    button.style.padding = "10px 15px";
-    button.style.fontSize = "16px";
-    button.style.fontWeight = "bold";
-    button.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
-    button.style.transition = "transform 0.2s, box-shadow 0.2s";
-    button.innerHTML = `
+    /**
+     * Injects a download button into the UI
+     */
+    (() => {
+      function injectDownloadButton(): void {
+        // Inject after h3 with data-testid="folder-title" or data-testid="file-title"
+        const targetDiv = document.querySelector("h1#page-title");
+        if (!targetDiv) {
+          console.error("Target container not found");
+          return;
+        } // Exit if the container is not found
+        const button = document.createElement("button");
+        button.id = "downloadAllButton";
+        button.setAttribute("data-testid", "download-all-btn");
+        button.className = "btn btn-secondary d-flex align-items-center";
+        button.style.marginRight = "10px";
+        button.style.padding = "10px 15px";
+        button.style.fontSize = "16px";
+        button.style.fontWeight = "bold";
+        button.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
+        button.style.transition = "transform 0.2s, box-shadow 0.2s";
+        button.innerHTML = `
       <img src="${chrome.runtime.getURL(
         "logo.png"
       )}" alt="Logo" style="width: 20px; height: 20px; margin-right: 10px;">
       Down-Cloud
     `;
-    // Attach click event listener to trigger the main function
-    button.addEventListener("click", () => {
-      main();
-    });
-    // Inject the button into the target container
-    targetDiv.insertBefore(button, targetDiv.firstChild);
-  }
+        // Attach click event listener to trigger the main function
+        button.addEventListener("click", () => {
+          main();
+        });
+        // Inject the button into the target container
+        targetDiv.insertBefore(button, targetDiv.firstChild);
+      }
 
-  // Ensure the button is injected once the DOM is fully loaded
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", injectDownloadButton);
-  } else {
-    // If the DOM is already loaded, inject the button immediately
-    injectDownloadButton();
-  }
-})();
+      // Ensure the button is injected once the DOM is fully loaded
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", injectDownloadButton);
+      } else {
+        // If the DOM is already loaded, inject the button immediately
+        injectDownloadButton();
+      }
+    })();
 
-/**
- * Show overlay dialog while downloading
- */
-async function showOverlay(): Promise<void> {
-  const overlay = document.createElement("div");
-  overlay.innerHTML = `
+    /**
+     * Show overlay dialog while downloading
+     */
+    async function showOverlay(): Promise<void> {
+      // Helper function to compute node size recursively
+      function computeSize(node: TreeNode): number {
+        if (node.type === "file") {
+          return node.size || 0;
+        }
+        if (node.children && node.children.length > 0) {
+          return node.children.reduce(
+            (sum, child) => sum + computeSize(child),
+            0
+          );
+        }
+        return 0;
+      }
+
+      // Helper function to format bytes into human readable string
+      function formatSize(bytes: number): string {
+        if (bytes === 0) return "0 B";
+        const k = 1024;
+        const sizes = ["B", "KB", "MB", "GB", "TB"];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        const size = parseFloat((bytes / Math.pow(k, i)).toFixed(2));
+        return `${size} ${sizes[i]}`;
+      }
+
+      const overlay = document.createElement("div");
+      overlay.innerHTML = `
   <div class="modal fade edit-modal in" tabindex="-1" role="dialog" style="display: block;">
     <div class="modal-dialog" role="document">
       <div class="modal-content" data-testid="modal_content">
@@ -86,10 +105,10 @@ async function showOverlay(): Promise<void> {
             Klicken Sie auf einen Ordner oder eine Datei, um deren Inhalte herunterzuladen. Ordner inklusive Unterordner und Dateien werden in Chargen (${
               (await getSettings()).batchSize
             } Dateien alle ${
-    (await getSettings()).batchDelay
-  } Sekunden) heruntergeladen. Nach ${
-    (await getSettings()).scanTime
-  } Sekunden wird die Suche nach Unterordnern beendet. Wenn Sie möchten, können Sie die leere 
+        (await getSettings()).batchDelay
+      } Sekunden) heruntergeladen. Nach ${
+        (await getSettings()).scanTime
+      } Sekunden wird die Suche nach Unterordnern beendet. Wenn Sie möchten, können Sie die leere 
           </span>
           <a href="#" id="downloadZip">Ordnerstruktur als ZIP herunterladen</a>
           <span>, um sie manuell wiederzuverwenden.</span>
@@ -114,319 +133,345 @@ async function showOverlay(): Promise<void> {
     </div>
   </div>
   `;
-  document.body.appendChild(overlay);
+      document.body.appendChild(overlay);
 
-  const downloadZipButton = overlay.querySelector("#downloadZip");
-  if (downloadZipButton) {
-    downloadZipButton.addEventListener("click", () => {
-      downloadZipFile();
-    });
-  }
-
-  const closeButton = overlay.querySelector(".btn-secondary");
-  if (closeButton) {
-    closeButton.addEventListener("click", () => {
-      overlay.remove();
-
-      // Clear all storage data
-      chrome.storage.local.clear(() => {
-        console.log("Storage cleared");
-      });
-
-      // Close the window
-      chrome.runtime.sendMessage(
-        { action: "close_window" },
-        (response: any) => {
-          console.log("Tab closed:", response);
-        }
-      );
-
-      // Remove the overlay
-      const overlayElement = document.querySelector(".modal");
-      if (overlayElement) {
-        overlayElement.remove();
+      const downloadZipButton = overlay.querySelector("#downloadZip");
+      if (downloadZipButton) {
+        downloadZipButton.addEventListener("click", () => {
+          downloadZipFile();
+        });
       }
 
-      // Reload the page
-      window.location.reload();
-    });
-  }
+      const closeButton = overlay.querySelector(".btn-secondary");
+      if (closeButton) {
+        closeButton.addEventListener("click", () => {
+          overlay.remove();
 
-  // Update file tree and make every node clickable, stop update after scanTime sec.
-  const fileTree = document.getElementById("file-tree");
-  const nodeMap: { [key: string]: TreeNode } = {};
+          // Clear all storage data
+          chrome.storage.local.clear(() => {
+            console.log("Storage cleared");
+          });
 
-  const createListItem = (node: TreeNode): string => {
-    nodeMap[node.id || "root"] = node;
-    return `<li class="${node.type}_structure">
-      <a href="#" class="download-node" data-nodeid="${node.id || "root"}">${
-      node.name === "root" ? "Alles" : node.name || "Unnamed"
-    }</a>
+          // Close the window
+          chrome.runtime.sendMessage(
+            { action: "close_window" },
+            (response: any) => {
+              console.log("Tab closed:", response);
+            }
+          );
+
+          // Remove the overlay
+          const overlayElement = document.querySelector(".modal");
+          if (overlayElement) {
+            overlayElement.remove();
+          }
+
+          // Reload the page
+          window.location.reload();
+        });
+      }
+
+      // Update file tree and make every node clickable, stop update after scanTime sec.
+      const fileTree = document.getElementById("file-tree");
+      const nodeMap: { [key: string]: TreeNode } = {};
+
+      // Updated createListItem to include size display
+      const createListItem = (node: TreeNode): string => {
+        nodeMap[node.id || "root"] = node;
+        const nodeSize = computeSize(node);
+        const sizeDisplay =
+          nodeSize > 0
+            ? `<span style="color:gray; font-size:small; margin-left:10px;">(${formatSize(
+                nodeSize
+              )})</span>`
+            : "";
+        return `<li class="${node.type}_structure">
+      <a href="#" class="download-node" data-nodeid="${node.id || "root"}">
+        ${
+          node.name === "root" ? "Alles" : node.name || "Unnamed"
+        } ${sizeDisplay}
+      </a>
       <ul>${
         node.children
           ? node.children.map((child) => createListItem(child)).join("")
           : ""
       }</ul>
     </li>`;
-  };
+      };
 
-  const updateTree = () => {
-    getTreeFromStorage("root").then((tree) => {
-      if (fileTree) {
-        const treeHtml = createListItem(tree);
-        fileTree.innerHTML = treeHtml;
-        document.querySelectorAll(".download-node").forEach((elem) => {
-          elem.addEventListener("click", (event) => {
-            event.preventDefault();
-            const nodeId = (elem as HTMLElement).getAttribute("data-nodeid");
-            if (nodeId && nodeMap[nodeId]) {
-              downloadNode(nodeMap[nodeId]);
-            }
-          });
+      const updateTree = () => {
+        getTreeFromStorage("root").then((tree) => {
+          if (fileTree) {
+            const treeHtml = createListItem(tree);
+            fileTree.innerHTML = treeHtml;
+            document.querySelectorAll(".download-node").forEach((elem) => {
+              elem.addEventListener("click", (event) => {
+                event.preventDefault();
+                const nodeId = (elem as HTMLElement).getAttribute(
+                  "data-nodeid"
+                );
+                if (nodeId && nodeMap[nodeId]) {
+                  downloadNode(nodeMap[nodeId]);
+                }
+              });
+            });
+          }
         });
-      }
-    });
-  };
+      };
 
-  const treeInterval = setInterval(updateTree, 500);
-  setTimeout(() => {
-    clearInterval(treeInterval);
-  }, (await getSettings()).scanTime * 1000);
+      const treeInterval = setInterval(updateTree, 500);
+      setTimeout(() => {
+        clearInterval(treeInterval);
+      }, (await getSettings()).scanTime * 1000);
 
-  let secondsRemaining = (await getSettings()).scanTime;
-  const interval = setInterval(() => {
-    secondsRemaining -= 1;
-    if (secondsRemaining <= 0) {
-      clearInterval(interval);
+      let secondsRemaining = (await getSettings()).scanTime;
+      const interval = setInterval(() => {
+        secondsRemaining -= 1;
+        if (secondsRemaining <= 0) {
+          clearInterval(interval);
 
-      // Get the number of files in the file tree
-      const fileCount = Object.keys(nodeMap).length;
+          // Get the number of files in the file tree
+          const fileCount = Object.keys(nodeMap).length;
 
-      const statusText = document.getElementById("status-text");
-      if (statusText) {
-        statusText.innerHTML = `Laden beendet. ${fileCount} Dateien gefunden.`;
-      }
-      const spinner = document.querySelector(".fa-spinner");
-      if (spinner) {
-        // Remove the spinner
-        spinner.remove();
-      }
-    } else {
-      const statusText = document.getElementById("status-text");
-      if (statusText) {
-        statusText.innerHTML = `Laden... (${secondsRemaining} Sekunden verbleibend)`;
-      }
-    }
-  }, 1000);
-}
-
-// New function to download a node (folder or file) in batches.
-async function downloadNode(node: TreeNode): Promise<void> {
-  // Helper sleep function.
-  function sleep(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-  }
-  // Recursively extract file nodes from the given node.
-  function extractFiles(node: TreeNode): TreeNode[] {
-    let files: TreeNode[] = [];
-    if (node.type === "file") {
-      files.push(node);
-    }
-    if (node.children) {
-      node.children.forEach((child) => {
-        files = files.concat(extractFiles(child));
-      });
-    }
-    return files;
-  }
-  const files = extractFiles(node);
-  (async () => {
-    const settings = await getSettings();
-    for (let i = 0; i < files.length; i += settings.batchSize) {
-      const batch = files.slice(i, i + settings.batchSize);
-      batch.forEach((file) => {
-        const fileUrl = `https://brandenburg.cloud/files/file?download=true&file=${file.id}`;
-        downloadFile(fileUrl);
-      });
-      if (i + settings.batchSize < files.length) {
-        await sleep(settings.batchDelay * 1000);
-      }
-    }
-  })();
-}
-
-/**
- * Main function to initiate file extraction
- */
-function main(): void {
-  // Clear all storage data
-  chrome.storage.local.clear(() => {
-    console.log("Storage cleared");
-  });
-
-  chrome.runtime.sendMessage({ action: "open_tab", url: "about:blank" }); // Open a new tab
-  const fileList = extractFileList(); // Retrieve file and folder structure
-  console.log(fileList); // Log the extracted file list
-
-  // Show the overlay dialog
-  showOverlay();
-
-  setTimeout(() => {
-    // Open a new tab for every directory
-    fileList.directories.forEach((directory) => {
-      const newTabUrl = directory.url + "?down-cloud=true"; // Append the query parameter
-      chrome.runtime.sendMessage({ action: "open_tab", url: newTabUrl });
-    });
-
-    chrome.storage.local.set({ root: fileList });
-  }, 1000); // Delay to ensure the new tab is opened
-}
-
-/**
- * Remote function to extract files in another tab (if needed)
- */
-function remote(): void {
-  const fileList = extractFileList();
-
-  // Get the current URL
-  const currentUrl = window.location.href;
-  const urlParts = currentUrl.split("/");
-
-  // Get the last part of the URL
-  const lastPart = urlParts[urlParts.length - 1];
-  const lastPartId = lastPart.split("?")[0]; // Remove any query parameters
-
-  fileList.directories.forEach((directory) => {
-    const newTabUrl = directory.url + "?down-cloud=true"; // Append the query parameter
-    chrome.runtime.sendMessage({ action: "open_tab", url: newTabUrl });
-  });
-
-  // Save the extracted data to extension storage
-  chrome.storage.local.set({ [lastPartId]: fileList }, () => {
-    console.log("File list saved to storage:", fileList);
-  });
-}
-
-declare const chrome: any;
-
-/**
- * Represents a directory structure
- */
-interface Directory {
-  id: string;
-  name: string | undefined;
-  url: string;
-}
-
-/**
- * Represents a file structure
- */
-interface FileItem {
-  id: string;
-  name: string | undefined;
-}
-
-/**
- * Extracts a list of directories and files from the page
- * @returns An object containing directories and files
- */
-function extractFileList(): { directories: Directory[]; files: FileItem[] } {
-  const directories: Directory[] = [];
-
-  // Find and process all folder elements
-  const openFolderButtons = document.querySelectorAll(
-    ".directories .openfolder"
-  );
-  openFolderButtons.forEach((button) => {
-    const folderId = button.getAttribute("data-folder-id");
-    const folderName = (
-      button.querySelector("strong.card-title-directory") as HTMLElement
-    )?.innerText;
-    if (folderId) {
-      // Construct the folder URL by modifying the current URL
-      const urlParts = window.location.href.split("/");
-      if (urlParts.length > 6) urlParts.pop(); // Remove the last ID if present
-      const newUrl = `${urlParts.join("/")}/${folderId}`;
-
-      directories.push({
-        id: folderId,
-        name: folderName,
-        url: newUrl
-          .replace(/([^:]\/)\/+/g, "$1")
-          .replace("?down-cloud=true", ""),
-      });
-    }
-  });
-
-  const files: FileItem[] = [];
-
-  // Find and process all file elements
-  const fileButtons = document.querySelectorAll(".files .file");
-  fileButtons.forEach((button) => {
-    const fileId = button.getAttribute("data-file-id");
-    const fileName = (button.querySelector("a.title") as HTMLElement)
-      ?.innerText;
-    if (fileId) {
-      files.push({ id: fileId, name: fileName });
-    }
-  });
-
-  // Return structured file and folder data
-  return { directories, files };
-}
-
-interface TreeNode {
-  type: "root" | "folder" | "file";
-  name?: string;
-  id?: string;
-  children?: TreeNode[];
-}
-
-async function getTreeFromStorage(rootId: string): Promise<TreeNode> {
-  const getNode = (
-    id: string
-  ): Promise<{ directories: Directory[]; files: FileItem[] }> => {
-    return new Promise((resolve) => {
-      interface StorageFetchResult {
-        directories: Directory[];
-        files: FileItem[];
-      }
-      chrome.storage.local.get(
-        id,
-        (result: { [key: string]: StorageFetchResult }) => {
-          resolve(
-            result[id] || ({ directories: [], files: [] } as StorageFetchResult)
-          );
+          const statusText = document.getElementById("status-text");
+          if (statusText) {
+            statusText.innerHTML = `Laden beendet. ${fileCount} Dateien gefunden.`;
+          }
+          const spinner = document.querySelector(".fa-spinner");
+          if (spinner) {
+            // Remove the spinner
+            spinner.remove();
+          }
+        } else {
+          const statusText = document.getElementById("status-text");
+          if (statusText) {
+            statusText.innerHTML = `Laden... (${secondsRemaining} Sekunden verbleibend)`;
+          }
         }
-      );
-    });
-  };
-
-  async function buildTree(
-    id: string,
-    name: string | undefined,
-    type: "root" | "folder"
-  ): Promise<TreeNode> {
-    const { directories, files } = await getNode(id);
-    const children: TreeNode[] = [];
-
-    for (const dir of directories) {
-      children.push(await buildTree(dir.id, dir.name, "folder"));
+      }, 1000);
     }
 
-    for (const file of files) {
-      children.push({
-        type: "file",
-        id: file.id,
-        name: file.name,
+    // New function to download a node (folder or file) in batches.
+    async function downloadNode(node: TreeNode): Promise<void> {
+      // Helper sleep function.
+      function sleep(ms: number): Promise<void> {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+      }
+      // Recursively extract file nodes from the given node.
+      function extractFiles(node: TreeNode): TreeNode[] {
+        let files: TreeNode[] = [];
+        if (node.type === "file") {
+          files.push(node);
+        }
+        if (node.children) {
+          node.children.forEach((child) => {
+            files = files.concat(extractFiles(child));
+          });
+        }
+        return files;
+      }
+      const files = extractFiles(node);
+      (async () => {
+        const settings = await getSettings();
+        for (let i = 0; i < files.length; i += settings.batchSize) {
+          const batch = files.slice(i, i + settings.batchSize);
+          batch.forEach((file) => {
+            const fileUrl = `https://brandenburg.cloud/files/file?download=true&file=${file.id}`;
+            downloadFile(fileUrl);
+          });
+          if (i + settings.batchSize < files.length) {
+            await sleep(settings.batchDelay * 1000);
+          }
+        }
+      })();
+    }
+
+    /**
+     * Main function to initiate file extraction
+     */
+    function main(): void {
+      // Clear all storage data
+      chrome.storage.local.clear(() => {
+        console.log("Storage cleared");
+      });
+
+      chrome.runtime.sendMessage({ action: "open_tab", url: "about:blank" }); // Open a new tab
+      const fileList = extractFileList(); // Retrieve file and folder structure
+      console.log(fileList); // Log the extracted file list
+
+      // Show the overlay dialog
+      showOverlay();
+
+      setTimeout(() => {
+        // Open a new tab for every directory
+        fileList.directories.forEach((directory) => {
+          const newTabUrl = directory.url + "?down-cloud=true"; // Append the query parameter
+          chrome.runtime.sendMessage({ action: "open_tab", url: newTabUrl });
+        });
+
+        chrome.storage.local.set({ root: fileList });
+      }, 1000); // Delay to ensure the new tab is opened
+    }
+
+    /**
+     * Remote function to extract files in another tab (if needed)
+     */
+    function remote(): void {
+      const fileList = extractFileList();
+
+      // Get the current URL
+      const currentUrl = window.location.href;
+      const urlParts = currentUrl.split("/");
+
+      // Get the last part of the URL
+      const lastPart = urlParts[urlParts.length - 1];
+      const lastPartId = lastPart.split("?")[0]; // Remove any query parameters
+
+      fileList.directories.forEach((directory) => {
+        const newTabUrl = directory.url + "?down-cloud=true"; // Append the query parameter
+        chrome.runtime.sendMessage({ action: "open_tab", url: newTabUrl });
+      });
+
+      // Save the extracted data to extension storage
+      chrome.storage.local.set({ [lastPartId]: fileList }, () => {
+        console.log("File list saved to storage:", fileList);
       });
     }
 
-    return { type, id, name, children };
-  }
+    declare const chrome: any;
 
-  return buildTree(rootId, "root", "root");
-}
+    /**
+     * Represents a directory structure
+     */
+    interface Directory {
+      id: string;
+      name: string | undefined;
+      url: string;
+    }
+
+    /**
+     * Represents a file structure
+     */
+    interface FileItem {
+      id: string;
+      name: string | undefined;
+      size?: number;
+    }
+
+    /**
+     * Extracts a list of directories and files from the page
+     * @returns An object containing directories and files
+     */
+    function extractFileList(): {
+      directories: Directory[];
+      files: FileItem[];
+    } {
+      const directories: Directory[] = [];
+
+      // Find and process all folder elements
+      const openFolderButtons = document.querySelectorAll(
+        ".directories .openfolder"
+      );
+      openFolderButtons.forEach((button) => {
+        const folderId = button.getAttribute("data-folder-id");
+        const folderName = (
+          button.querySelector("strong.card-title-directory") as HTMLElement
+        )?.innerText;
+        if (folderId) {
+          // Construct the folder URL by modifying the current URL
+          const urlParts = window.location.href.split("/");
+          if (urlParts.length > 6) urlParts.pop(); // Remove the last ID if present
+          const newUrl = `${urlParts.join("/")}/${folderId}`;
+
+          directories.push({
+            id: folderId,
+            name: folderName,
+            url: newUrl
+              .replace(/([^:]\/)\/+/g, "$1")
+              .replace("?down-cloud=true", ""),
+          });
+        }
+      });
+
+      const files: FileItem[] = [];
+
+      // Find and process all file elements
+      const fileButtons = document.querySelectorAll(".files .file");
+      fileButtons.forEach((button) => {
+        const fileId = button.getAttribute("data-file-id");
+        const fileSize = button.getAttribute("data-file-size");
+        const fileName = (button.querySelector("a.title") as HTMLElement)
+          ?.innerText;
+        if (fileId) {
+          files.push({
+            id: fileId,
+            name: fileName,
+            size: fileSize ? parseInt(fileSize) : undefined,
+          });
+        }
+      });
+
+      // Return structured file and folder data
+      return { directories, files };
+    }
+
+    interface TreeNode {
+      type: "root" | "folder" | "file";
+      name?: string;
+      id?: string;
+      children?: TreeNode[];
+      // Added to track file/folder size in bytes
+      size?: number;
+    }
+
+    async function getTreeFromStorage(rootId: string): Promise<TreeNode> {
+      const getNode = (
+        id: string
+      ): Promise<{ directories: Directory[]; files: FileItem[] }> => {
+        return new Promise((resolve) => {
+          interface StorageFetchResult {
+            directories: Directory[];
+            files: FileItem[];
+          }
+          chrome.storage.local.get(
+            id,
+            (result: { [key: string]: StorageFetchResult }) => {
+              resolve(
+                result[id] ||
+                  ({ directories: [], files: [] } as StorageFetchResult)
+              );
+            }
+          );
+        });
+      };
+
+      async function buildTree(
+        id: string,
+        name: string | undefined,
+        type: "root" | "folder"
+      ): Promise<TreeNode> {
+        const { directories, files } = await getNode(id);
+        const children: TreeNode[] = [];
+
+        for (const dir of directories) {
+          children.push(await buildTree(dir.id, dir.name, "folder"));
+        }
+
+        // Include file size from storage data
+        for (const file of files) {
+          children.push({
+            type: "file",
+            id: file.id,
+            name: file.name,
+            size: file.size, // pass file size in bytes
+          });
+        }
+
+        return { type, id, name, children };
+      }
+
+      return buildTree(rootId, "root", "root");
+    }
 
 /**
  * Checks if the script should run in "down-cloud" mode for remote extraction
